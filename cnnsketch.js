@@ -79,59 +79,47 @@ function typeColor(){
   return c;
 }
 
-
 function getArticleList(){
-  let feedUrl = "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml";
-  fetch(feedUrl).then((res) => {
-    res.text().then((xmlTxt) => {
-      var domParser = new DOMParser();
-      let doc = domParser.parseFromString(xmlTxt, 'text/xml');
-      doc.querySelectorAll('item').forEach((item) => {
-        articles.push(item.querySelector('link').innerHTML);
-      })
-      getNextArticle();
-    })
-  })
+    let toFetch = "getcnnlist.php";
+
+    fetch(toFetch)
+        .then(function(response) {
+            return response.json();
+        }).then(function(myJson) {
+            let returned_html = new DOMParser().parseFromString(atob(myJson.data.html), 'text/html');
+            let allLI = returned_html.getElementsByClassName("card--lite");
+            articles =  Array.from(allLI).map( (el) => el.querySelector('a').getAttribute('href'));
+
+            getNextArticle()
+        });
 }
+
+
 
 function getNextArticle(){
   let nextURL =  articles.shift();
   oldArticles.push(nextURL);
-  getNewArticle('TxqaJFtRyHvrV4388x!MI7A^5kjWnK&url', nextURL);
+  getNewArticle("https://lite.cnn.com/" + nextURL);
 }
 
-function getNewArticle(key,url){
-  let toFetch = 'new_article.php?key='+key+'&url='+url;
-  fetch(toFetch)
-  .then(function(response) {
-    return response.json();
-  })
-  .then(function(myJson) {
-    let returned_html = new DOMParser().parseFromString(atob(myJson.data.html), 'text/html');
-    preprocessArticle(returned_html);
-
-  });
+function getNewArticle(url){
+    let toFetch = 'getcnn.php?&url='+url;
+    fetch(toFetch)
+        .then(function(response) {
+            // console.log(response);
+            return response.json();
+        }).then(function(myJson) {
+            let returned_html = new DOMParser().parseFromString(atob(myJson.data.html), 'text/html');
+            let story = returned_html.getElementsByTagName('article')[0].innerText;
+            setWords(story);
+        });
 }
 
-function preprocessArticle(html){
-  let story = html.getElementsByName("articleBody");
-  let inTx = story[0].innerText;
-  inTx.replace("We are having trouble retrieving the article content"," ");
-  // inTx.replace(""," ");
-  inTx.replace("Please enable JavaScript in your browser settings"," ");
-  inTx.replace("Thank you for your patience while we verify access"," ");
-  inTx.replace("If you are in Reader mode please exit and log into your Times account"," ");
-  inTx.replace("Thank you for your patience while we verify access"," ");
-  inTx.replace("Already a subscriber"," ");
-  inTx.replace("Log in"," ");
-  inTx.replace("Want all of The Times"," ");
-  inTx.replace("Subscribe"," ");
-  setWords(inTx);
-}
 
 function setWords(newWords){
-  //let nw = newWords.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, ' ');
-  let word_array = newWords.split(" ");
+  let nw = newWords.replace(/[^a-z0-9\s]/gi, '').replace(/(\r\n|\n|\r)/gm, "");
+//   nw.replace("Source CNN", "");
+  let word_array = nw.split(" ");
   word_array = word_array.filter(function(str) {
       return /\S/.test(str);
   });
