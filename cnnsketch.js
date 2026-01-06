@@ -99,7 +99,7 @@ function getArticleList(){
 function getNextArticle(){
   let nextURL =  articles.shift();
   oldArticles.push(nextURL);
-  getNewArticle("https://lite.cnn.com/" + nextURL);
+  getNewArticle("https://lite.cnn.com" + nextURL);
 }
 
 function getNewArticle(url){
