@@ -54,7 +54,6 @@ function nextWord(){
     wordCounter++;
     if( wordCounter > words.length ){
       wordCounter = 0;
-      console.log("On To The Next One!")
       getNextArticle();
     }
   }
@@ -98,6 +97,7 @@ function getArticleList(){
 
 function getNextArticle(){
   let nextURL =  articles.shift();
+  console.log(nextURL);
   oldArticles.push(nextURL);
   getNewArticle("https://lite.cnn.com" + nextURL);
 }
@@ -109,9 +109,14 @@ function getNewArticle(url){
             // console.log(response);
             return response.json();
         }).then(function(myJson) {
+            let story;
             let returned_html = new DOMParser().parseFromString(atob(myJson.data.html), 'text/html');
-            let story = returned_html.getElementsByTagName('article')[0].innerText;
-            setWords(story);
+            
+            if( returned_html.getElementsByTagName('article').length ){
+                let article = returned_html.getElementsByTagName('article')[0];
+                story= article.innerText;
+                setWords(story);
+            }
         });
 }
 
