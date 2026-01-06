@@ -94,28 +94,24 @@ function getArticleList(){
   })
 }
 
-
-
 function getNextArticle(){
   let nextURL =  articles.shift();
   oldArticles.push(nextURL);
   getNewArticle('TxqaJFtRyHvrV4388x!MI7A^5kjWnK&url', nextURL);
 }
 
-
 function getNewArticle(key,url){
-  let toFetch = window.location.pathname +'/new_article.php?key='+key+'&url='+url;
+  let toFetch = 'new_article.php?key='+key+'&url='+url;
   fetch(toFetch)
   .then(function(response) {
     return response.json();
   })
   .then(function(myJson) {
-    // console.log(myJson);
     let returned_html = new DOMParser().parseFromString(atob(myJson.data.html), 'text/html');
     preprocessArticle(returned_html);
+
   });
 }
-
 
 function preprocessArticle(html){
   let story = html.getElementsByName("articleBody");
@@ -138,9 +134,6 @@ function keyTyped() {
     if(visible) gui.show(); else gui.hide();
   }
 }
-
-
-
 
 window.onresize = function() {
   var w = window.innerWidth;
